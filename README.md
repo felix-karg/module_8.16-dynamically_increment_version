@@ -49,7 +49,7 @@ Dynamically Increment Application Version in Jenkins Pipeline
    ```
 4. At the end of the script block of 'increment version' stage from step 2 above add the following lines:
    ```
-   def matcher = readFile('pom.xml') =- '<version>(.*)</version>'
+   def matcher = readFile('pom.xml') =~ '<version>(.*)</version>'
    def version = matcher[0][1]
    IMAGE_NAME = "$version-$BUILD_NUMBER"
    ```
@@ -61,3 +61,5 @@ Dynamically Increment Application Version in Jenkins Pipeline
    CMD java -jar java-maven-app-*.jar
    ```
 7. To avoid conflict between mulitible jar files for packaging there need to be executed `mvn clean package` in the pipeline script
+8. Execute pipeline and verify that image is built an pushed to Docker Hub
+9. 
