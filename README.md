@@ -18,4 +18,11 @@ Dynamically Increment Application Version in Jenkins Pipeline
 - Configure Jenkins pipeline to not trigger automatically on CI build commit to avoid commit loop
 
 ## Implementation Steps:
-1. 
+1. Increment version in 'pom.xml' file of [demo project](https://github.com/felix-karg/java-maven-app) via maven plugin:
+   `mvn build-helper:parse-version versions:set -DnewVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion} versions:commit`
+   1. `build-helper:parse-version`: extracts separte values for major, minor and incremental version from actual version number
+   2. `-DnewVersion=`: set new version
+   3. `parsedVersion`: object that contains properties for major, minor and incremental version
+   4. Available values to set are `majorVersion` (actually set major version), `nextMajorVersion` (actually set major version + 1), `minorVersion`, `nextMinorVersion`, `incrementalVersion` and `nextIncrementalVersion`
+   5. `versions:commit`: apply change to 'pom.xml'
+2. 
