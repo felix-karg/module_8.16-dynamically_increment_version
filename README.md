@@ -44,8 +44,8 @@ Dynamically Increment Application Version in Jenkins Pipeline
    ```
 3. To apply the actual version to the docker image name dynamically during pipeline execution we first need to use a variable for image name like this in the Jenkinsfile:
    ```
-   sh "docker build -t <docker-hub-repo>/demo-app:$IMAGE_NAME ."
-   sh "docker push  <docker-hub-repo>/demo-app:$IMAGE_NAME"
+   sh "docker build -t <docker-hub-repo>/demo-app:${IMAGE_NAME} ."
+   sh "docker push  <docker-hub-repo>/demo-app:${IMAGE_NAME}"
    ```
 4. At the end of the script block of 'increment version' stage from step 2 above add the following lines:
    ```
@@ -53,9 +53,9 @@ Dynamically Increment Application Version in Jenkins Pipeline
    def version = matcher[0][1]
    IMAGE_NAME = "$version-$BUILD_NUMBER"
    ```
-   First line returns an array with all occurances of regex '<version>something_within</version>' from 'pom.xml' file
-   Second line extracts first element of that array (the first occurrance of version node) which is another array, and from that the second element, which is the content of the 'version' tags
-   Third line appends the Jenkins build number and saves to variable 'IMAGE_NAME'
+   - First line returns an array with all occurances of regex '<version>something_within</version>' from 'pom.xml' file
+   - Second line extracts first element of that array (the first occurrance of version node) which is another array, and from that the second element, which is the content of the 'version' tags
+   - Third line appends the Jenkins build number and saves to variable 'IMAGE_NAME'
 6. In Dockerfile instead of `ENTRYPOINT` there needs to be used `CMD` to allow regular expression in command like this:
    ```
    CMD java -jar java-maven-app-*.jar
