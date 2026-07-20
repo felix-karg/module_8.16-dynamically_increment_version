@@ -62,4 +62,43 @@ Dynamically Increment Application Version in Jenkins Pipeline
    ```
 7. To avoid conflict between mulitible jar files for packaging there need to be executed `mvn clean package` in the pipeline script
 8. Execute pipeline and verify that image is built an pushed to Docker Hub
-9. 
+
+The problem with the current setup is that it changes the version only locally during pipeline run and never pushes the change back to the remote repository. So at every new pipeline run
+the increment of the version start again from the original version (in our case 1.0.0-SNAPSHOT) and not from the version of the previous pipeline run. So wee need further adjustments:
+
+9. Add a new stage at the end of the Jeninfile like this:
+   ```
+   stage("commit version update") {
+         steps {
+             script {
+                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                     sh 'git config --global user.email "jenkins@example.com"'
+                     sh 'git config --global user.name "jenkins"'
+
+                     sh 'git status'
+                     sh 'git branch'
+                     sh 'git config --list'
+
+                     sh "git remote set-url origin https://x-access-token:${GITHUB_TOKEN}@github.com/felix-karg/java-maven-app.git"
+                     sh 'git add .'
+                     sh 'git commit -m "ci: version bump"'
+                     sh 'git push origin HEAD:module_8.16-increment_version'
+                 }
+             }
+         }
+     }
+   ```
+   - There must be credentials 'github-token' of type 'Secret Text' set in Jenkins, that contian Personal Access Token for GitHub
+   - First two git commands add required settings
+   - Second three commands print logging information
+   - Last four commands set remote repository, then add, commit and push to this repository
+10. Run pipeline to see if the stage works well and check git repository to verify the commit done by Jenkins run
+
+When we have configured a hook to trigger pipeline automatically at every push to the repository, we now have created an infinitive loop of pushes and pipeline runs:
+Every push triggers the pipeline, which does another push for increased verion, which triggers the pipeline again. To prevent this we can do the following:
+
+11. Install Jenkins plugin 'Ignore Committer Strategy'
+12. After installation a new configuration 'Build strategies' is available for multibranch pipeline
+13. Click 'Add' -> 'Ignore Committer Strategy'
+14. Add emain address of Jenkins user from git config set in step 9 to be ignored by trigger
+15. Check the box 'Allow builds when a changeset contains non-ignored author(s)' and save
